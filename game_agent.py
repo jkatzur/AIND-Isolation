@@ -346,36 +346,29 @@ class AlphaBetaPlayer(IsolationPlayer):
             return (-1, -1)
         return legal_moves[random.randint(0, len(legal_moves) - 1)]
 
-def terminal_test(game,player):
+def terminal_test(game):
     return len(game.get_legal_moves()) == 0
 
-def max_value(game):
-    max_leaf = (-1,-1)
+def max_value(game,stop,turn):
+    print(game.to_string())
+    if terminal_test(game) | (turn > stop):
+        return custom_score(game,game.active_player)
     max_val = float("-inf")
     for m in game.get_legal_moves():
-        #print(m)
-        temp_game = game.forecast_move(m)
-        #print(temp_game.to_string())
-        test_val = custom_score(temp_game,temp_game.active_player)
-        #print("Analyzing move: ", m,"; with score: ",test_val)
-        if test_val > max_val:
-            max_val = test_val
-            max_leaf = m
-    return max_leaf
+        max_val = max(max_val, min_value(game,stop,turn+1))
+    return max_val
 
-def min_value(game):
-    min_leaf = (-1,-1)
+def min_value(game,stop,turn):
+    print(game.to_string())
+    if terminal_test(game) | (turn > stop):
+        return custom_score(game,game.active_player)
     min_val = float("inf")
     for m in game.get_legal_moves():
-        print(m)
-        temp_game = game.forecast_move(m)
-        test_val = custom_score(temp_game,temp_game.active_player)
-        print("Analyzing move: ", m,"; with score: ",test_val)
-        if test_val < min_val:
-            min_val = test_val
-            min_leaf = m
-    return min_leaf
+        min_val = min(min_val, max_value(game,stop,turn+1))
+    return min_val
 
+def mmd(game,stop):
+    return max_value(game,stop,0)
 
 if __name__ == "__main__":
     from isolation import Board
@@ -388,10 +381,17 @@ if __name__ == "__main__":
     # place player 1 on the board at row 2, column 3, then place player 2 on
     # the board at row 0, column 5; display the resulting board state.  Note
     # that the .apply_move() method changes the calling object in-place.
-    game.apply_move((6, 6))
-    game.apply_move((0, 0))
-    print(game.to_string())
-    print(max_value(game))
+
+    game.apply_move((6, 2))
+    game.apply_move(player2.get_move(game,10))
+    game.apply_move((5,4))
+    game.apply_move(player2.get_move(game,10))
+    game.apply_move((3,3))
+    game.apply_move(player2.get_move(game,10))
+    game.apply_move((4,5))
+    game.apply_move(player2.get_move(game,10))
+    print(mmd(game,1))
+
 #    print(min_value(game))
 
     """
