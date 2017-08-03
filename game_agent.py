@@ -38,12 +38,12 @@ def custom_score(game, player):
     if game.is_loser(player):
         return float("-inf")
 
-        if game.is_winner(player):
-            return float("inf")
+    if game.is_winner(player):
+        return float("inf")
 
-            own_moves = len(game.get_legal_moves(player))
-            opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-            return float(own_moves - opp_moves)
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float(own_moves - opp_moves)
 
 
 def custom_score_2(game, player):
@@ -72,10 +72,10 @@ def custom_score_2(game, player):
     if game.is_loser(player):
         return float("-inf")
 
-        if game.is_winner(player):
-            return float("inf")
+    if game.is_winner(player):
+        return float("inf")
 
-            return float(len(game.get_legal_moves(player)))
+    return float(len(game.get_legal_moves(player)))
 
 
 def custom_score_3(game, player):
@@ -104,12 +104,12 @@ def custom_score_3(game, player):
     if game.is_loser(player):
         return float("-inf")
 
-        if game.is_winner(player):
-            return float("inf")
+    if game.is_winner(player):
+        return float("inf")
 
-            w, h = game.width / 2., game.height / 2.
-            y, x = game.get_player_location(player)
-            return float((h - y)**2 + (w - x)**2)
+    w, h = game.width / 2., game.height / 2.
+    y, x = game.get_player_location(player)
+    return float((h - y)**2 + (w - x)**2)
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
@@ -229,12 +229,17 @@ class MinimaxPlayer(IsolationPlayer):
                 pseudocode) then you must copy the timer check into the top of
                 each helper function or else your agent will timeout during
                 testing.
-        """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+                if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+
+        """
+        # TODO: Must actually complete this! This just returns a random move
+        legal_moves = game.get_legal_moves()
+        print("I'm here!!!")
+        if not legal_moves:
+            return (-1, -1)
+        return legal_moves[random.randint(0, len(legal_moves) - 1)]
 
 
 class AlphaBetaPlayer(IsolationPlayer):
@@ -275,8 +280,20 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         self.time_left = time_left
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        # Initialize the best move so that this function returns something
+        # in case the search fails due to timeout
+        best_move = (-1, -1)
+
+        try:
+            # The try/except block will automatically catch the exception
+            # raised when the timer is about to expire.
+            return self.alphabeta(game, self.search_depth)
+
+        except SearchTimeout:
+            pass  # Handle any actions required after timeout as needed
+
+        # Return the best move from the last completed search iteration
+        return best_move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
         """Implement depth-limited minimax search with alpha-beta pruning as
@@ -323,8 +340,45 @@ class AlphaBetaPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
-
         # TODO: finish this function!
-        raise NotImplementedError
+        legal_moves = game.get_legal_moves()
+        print("I'm here!!!")
+        if not legal_moves:
+            return (-1, -1)
+        return legal_moves[random.randint(0, len(legal_moves) - 1)]
+"""
+if __name__ == "__main__":
+    from isolation import Board
+
+    # create an isolation board (by default 7x7)
+    player1 = MinimaxPlayer()
+    player2 = AlphaBetaPlayer()
+    game = Board(player1, player2)
+
+    # place player 1 on the board at row 2, column 3, then place player 2 on
+    # the board at row 0, column 5; display the resulting board state.  Note
+    # that the .apply_move() method changes the calling object in-place.
+    game.apply_move((2, 3))
+    game.apply_move((0, 5))
+    print(game.to_string())
+
+    game.apply_move(player1.get_move(game,10))
+    game.apply_move(player2.get_move(game,10))
+    print(game.to_string())
+
+    game.apply_move(player1.get_move(game,10))
+    game.apply_move(player2.get_move(game,10))
+    print(game.to_string())
+
+
+    game.apply_move(player1.get_move(game,10))
+    game.apply_move(player2.get_move(game,10))
+    print(game.to_string())
+
+    game.apply_move(player1.get_move(game,10))
+    game.apply_move(player2.get_move(game,10))
+    print(game.to_string())
+
+    assert(player1 == game.active_player)
+
+"""
