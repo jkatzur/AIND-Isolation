@@ -350,20 +350,23 @@ def terminal_test(game):
     return len(game.get_legal_moves()) == 0
 
 def max_value(game,stop,turn):
-    print(game.to_string())
+    #print(game.to_string())
     if terminal_test(game) | (turn > stop):
+        #print("I'm here on turn ", turn)
         return custom_score(game,game.active_player)
     max_val = float("-inf")
     for m in game.get_legal_moves():
+        game = game.forecast_move(m)
         max_val = max(max_val, min_value(game,stop,turn+1))
     return max_val
 
 def min_value(game,stop,turn):
-    print(game.to_string())
+    #print(game.to_string())
     if terminal_test(game) | (turn > stop):
         return custom_score(game,game.active_player)
     min_val = float("inf")
     for m in game.get_legal_moves():
+        game = game.forecast_move(m)
         min_val = min(min_val, max_value(game,stop,turn+1))
     return min_val
 
@@ -382,15 +385,10 @@ if __name__ == "__main__":
     # the board at row 0, column 5; display the resulting board state.  Note
     # that the .apply_move() method changes the calling object in-place.
 
-    game.apply_move((6, 2))
-    game.apply_move(player2.get_move(game,10))
-    game.apply_move((5,4))
-    game.apply_move(player2.get_move(game,10))
-    game.apply_move((3,3))
-    game.apply_move(player2.get_move(game,10))
-    game.apply_move((4,5))
-    game.apply_move(player2.get_move(game,10))
-    print(mmd(game,1))
+    game.apply_move((0, 1))
+    game.apply_move((0,0))
+    print(mmd(game,3))
+    print(game.to_string())
 
 #    print(min_value(game))
 
