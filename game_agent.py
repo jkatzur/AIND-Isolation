@@ -43,7 +43,7 @@ def custom_score(game, player):
 
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves - opp_moves)
+    return float(own_moves)
 
 
 def custom_score_2(game, player):
@@ -110,6 +110,9 @@ def custom_score_3(game, player):
     w, h = game.width / 2., game.height / 2.
     y, x = game.get_player_location(player)
     return float((h - y)**2 + (w - x)**2)
+
+def terminal_test(game):
+    return len(game.get_legal_moves()) == 0
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
@@ -234,13 +237,39 @@ class MinimaxPlayer(IsolationPlayer):
                 raise SearchTimeout()
 
         """
-        # TODO: Must actually complete this! This just returns a random move
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
 
-        legal_moves = game.get_legal_moves()
-        if not legal_moves:
-            return (-1, -1)
-        return legal_moves[random.randint(0, len(legal_moves) - 1)]
+        next_move = (-1,-1)
+        v = float("-inf")
+        #print(game.get_legal_moves())
+        for m in game.get_legal_moves():
+            contender = self.mm_value(game.forecast_move(m),depth, True)
+            #print("Move is: ", m, "; Value is: ", contender)
+            if contender > v:
+                v = contender
+                a = m
+        #print("Next move is: ", next_move)
+        return a
 
+    def mm_value(self, game,depth, is_max):
+        #print("Max Value Calc")
+        #print(game.to_string())
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        if (depth == 0) | terminal_test(game):
+            #print("I'm here on turn ", turn)
+            return self.score(game, self)
+        if is_max:
+            v = float("-inf")
+        else:
+            v = float("inf")
+        for m in game.get_legal_moves():
+            if is_max:
+                v = max(v, self.mm_value(game.forecast_move(m),depth-1,False))
+            else:
+                v = min(v, self.mm_value(game.forecast_move(m),depth-1,True))
+        return v
 
 class AlphaBetaPlayer(IsolationPlayer):
     """Game-playing agent that chooses a move using iterative deepening minimax
@@ -346,49 +375,27 @@ class AlphaBetaPlayer(IsolationPlayer):
             return (-1, -1)
         return legal_moves[random.randint(0, len(legal_moves) - 1)]
 
-def terminal_test(game):
-    return len(game.get_legal_moves()) == 0
-
-def max_value(game,stop,turn):
-    #print(game.to_string())
-    if terminal_test(game) | (turn > stop):
-        #print("I'm here on turn ", turn)
-        return custom_score(game,game.active_player)
-    max_val = float("-inf")
-    for m in game.get_legal_moves():
-        game = game.forecast_move(m)
-        max_val = max(max_val, min_value(game,stop,turn+1))
-    return max_val
-
-def min_value(game,stop,turn):
-    #print(game.to_string())
-    if terminal_test(game) | (turn > stop):
-        return custom_score(game,game.active_player)
-    min_val = float("inf")
-    for m in game.get_legal_moves():
-        game = game.forecast_move(m)
-        min_val = min(min_val, max_value(game,stop,turn+1))
-    return min_val
-
-def mmd(game,stop):
-    return max_value(game,stop,0)
-
 if __name__ == "__main__":
     from isolation import Board
 
     # create an isolation board (by default 7x7)
     player1 = MinimaxPlayer()
-    player2 = AlphaBetaPlayer()
+    player2 = MinimaxPlayer()
     game = Board(player1, player2)
 
     # place player 1 on the board at row 2, column 3, then place player 2 on
     # the board at row 0, column 5; display the resulting board state.  Note
     # that the .apply_move() method changes the calling object in-place.
 
-    game.apply_move((0, 1))
-    game.apply_move((0,0))
-    print(mmd(game,3))
+    game.apply_move((3,3))
+    game.apply_move((3,4))
+    game.apply_move((2,1))
+    game.apply_move((4,6))
     print(game.to_string())
+    print(player1.get_move(game,lambda: 1000))
+#    game.apply_move(player1.get_move(game,2))
+#    game.apply_move(player2.get_move(game,2))
+#    print(game.to_string())
 
 #    print(min_value(game))
 
