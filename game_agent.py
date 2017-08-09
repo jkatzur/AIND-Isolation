@@ -43,7 +43,7 @@ def custom_score(game, player):
 
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves)
+    return float(own_moves - opp_moves)
 
 
 def custom_score_2(game, player):
@@ -240,12 +240,11 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        next_move = (-1,-1)
+        a = (-1,-1)
         v = float("-inf")
         #print(game.get_legal_moves())
         for m in game.get_legal_moves():
-            contender = self.mm_value(game.forecast_move(m),depth, True)
-            #print("Move is: ", m, "; Value is: ", contender)
+            contender = self.mm_value(game.forecast_move(m),depth-1, False)
             if contender > v:
                 v = contender
                 a = m
@@ -253,12 +252,9 @@ class MinimaxPlayer(IsolationPlayer):
         return a
 
     def mm_value(self, game,depth, is_max):
-        #print("Max Value Calc")
-        #print(game.to_string())
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         if (depth == 0) | terminal_test(game):
-            #print("I'm here on turn ", turn)
             return self.score(game, self)
         if is_max:
             v = float("-inf")
@@ -387,12 +383,15 @@ if __name__ == "__main__":
     # the board at row 0, column 5; display the resulting board state.  Note
     # that the .apply_move() method changes the calling object in-place.
 
-    game.apply_move((3,3))
-    game.apply_move((3,4))
+#    game.apply_move((3,3))
+#    game.apply_move((3,4))
     game.apply_move((2,1))
     game.apply_move((4,6))
     print(game.to_string())
-    print(player1.get_move(game,lambda: 1000))
+    game.apply_move(player1.get_move(game,lambda: 1000))
+    game.apply_move(player2.get_move(game,lambda: 1000))
+    print(game.to_string())
+    print(game.utility(game))
 #    game.apply_move(player1.get_move(game,2))
 #    game.apply_move(player2.get_move(game,2))
 #    print(game.to_string())
