@@ -365,18 +365,46 @@ class AlphaBetaPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        # TODO: finish this function!
-        legal_moves = game.get_legal_moves()
-        if not legal_moves:
-            return (-1, -1)
-        return legal_moves[random.randint(0, len(legal_moves) - 1)]
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        v = float("-inf")
+        a = (-1,-1)
+        #print(game.get_legal_moves())
+        for m in game.get_legal_moves():
+            contender = self.ab_value(game.forecast_move(m),alpha,beta, depth-1, False)
+            alpha = max(alpha,contender)
+            if contender > v:
+                v = contender
+                a = m
+        #print("Next move is: ", next_move)
+        return a
+
+    def ab_value(self, game,alpha, beta, depth, is_max):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        if (depth == 0) | terminal_test(game):
+            return self.score(game, self)
+        if is_max:
+            v = float("-inf")
+        else:
+            v = float("inf")
+        for m in game.get_legal_moves():
+            if is_max:
+                v = max(v, self.ab_value(game.forecast_move(m),alpha,beta,depth-1,False))
+                if v >= beta: return v
+                alpha = max(alpha, v)
+            else:
+                v = min(v, self.ab_value(game.forecast_move(m),alpha,beta,depth-1,True))
+                if v <= alpha: return v
+                beta = min(beta, v)
+        return v
 
 if __name__ == "__main__":
     from isolation import Board
 
     # create an isolation board (by default 7x7)
     player1 = MinimaxPlayer()
-    player2 = MinimaxPlayer()
+    player2 = AlphaBetaPlayer()
     game = Board(player1, player2)
 
     # place player 1 on the board at row 2, column 3, then place player 2 on
@@ -386,9 +414,9 @@ if __name__ == "__main__":
 #    game.apply_move((3,3))
 #    game.apply_move((3,4))
     game.apply_move((2,1))
-    game.apply_move((4,6))
+#    game.apply_move((4,6))
     print(game.to_string())
-    game.apply_move(player1.get_move(game,lambda: 1000))
+#    game.apply_move(player1.get_move(game,lambda: 1000))
     game.apply_move(player2.get_move(game,lambda: 1000))
     print(game.to_string())
     print(game.utility(game))
