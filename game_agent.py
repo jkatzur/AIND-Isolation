@@ -303,19 +303,25 @@ class AlphaBetaPlayer(IsolationPlayer):
             Board coordinates corresponding to a legal move; may return
             (-1, -1) if there are no available legal moves.
         """
+        # I NEED TO ADD ITERATIVE DEEPENING HERE!
         self.time_left = time_left
 
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
         best_move = (-1, -1)
+        depth = 1
+        #print("I am here")
+        while True:
+            #print("Now I'm in the while")
+            try:
+                # The try/except block will automatically catch the exception
+                # raised when the timer is about to expire.
+                best_move = self.alphabeta(game, depth)
+                depth += 1
+                #print("At Depth ", depth, "Best Move is: ", best_move)
 
-        try:
-            # The try/except block will automatically catch the exception
-            # raised when the timer is about to expire.
-            return self.alphabeta(game, self.search_depth)
-
-        except SearchTimeout:
-            pass  # Handle any actions required after timeout as needed
+            except SearchTimeout:
+                return best_move
 
         # Return the best move from the last completed search iteration
         return best_move
@@ -413,13 +419,17 @@ if __name__ == "__main__":
 
 #    game.apply_move((3,3))
 #    game.apply_move((3,4))
-    game.apply_move((2,1))
+    game.apply_move(player1.get_move(game,lambda: 10))
 #    game.apply_move((4,6))
     print(game.to_string())
 #    game.apply_move(player1.get_move(game,lambda: 1000))
-    game.apply_move(player2.get_move(game,lambda: 1000))
+    game.apply_move(player2.get_move(game,lambda: 10))
     print(game.to_string())
-    print(game.utility(game))
+    game.apply_move(player1.get_move(game,lambda: 10))
+    print(game.to_string())
+    game.apply_move(player2.get_move(game,lambda: 10))
+    print(game.to_string())
+
 #    game.apply_move(player1.get_move(game,2))
 #    game.apply_move(player2.get_move(game,2))
 #    print(game.to_string())
