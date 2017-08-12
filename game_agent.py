@@ -42,9 +42,16 @@ def custom_score(game, player):
         return float("inf")
 
     own_moves = len(game.get_legal_moves(player))
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    own_center_score = center_score(game, player)
-    return float(own_moves - 2 * opp_moves + .5 * own_center_score)
+    #With tons of options, take a good position
+    if own_moves > 5:
+        return float(own_moves - center_score(game,player))
+    #With moderate options, stake out moves and position
+    elif own_moves > 2:
+        return float(own_moves - .5 * center_score(game,player))
+    #with limited options, go for the kill
+    else:
+        opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+        return float(own_moves - 2 * opp_moves)
 
 
 def custom_score_2(game, player):
@@ -76,8 +83,16 @@ def custom_score_2(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    return float(len(game.get_legal_moves(player)))
-
+    own_moves = len(game.get_legal_moves(player))
+    if own_moves > 5:
+        return float(own_moves - .5 * center_score(game,player))
+    #With moderate options, stake out moves and position
+    elif own_moves > 2:
+        return float(own_moves - .25 * center_score(game,player))
+    #with limited options, go for the kill
+    else:
+        opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+        return float(own_moves - 2 * opp_moves)
 
 def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -101,14 +116,14 @@ def custom_score_3(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: Revise this function. It is the center_score function now.
+    # This is the basic how many moves function. Good to compare against
     if game.is_loser(player):
         return float("-inf")
 
     if game.is_winner(player):
         return float("inf")
 
-    return(center_score(game,player) + len(game.get_legal_moves(player)))
+    return float(len(game.get_legal_moves(player)))
 
 def center_score(game, player):
     """Calculates a score for how close to the center a player's move is.
@@ -211,11 +226,14 @@ class MinimaxPlayer(IsolationPlayer):
             (-1, -1) if there are no available legal moves.
         """
         self.time_left = time_left
+        #Start in center
+        if len(game.get_legal_moves()) > 8:
+            if (3,3) in game.get_legal_moves(): return (3,3)
+            if (3,2) in game.get_legal_moves(): return (3,2)
 
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
         best_move = set_best_move(game)
-
         try:
             # The try/except block will automatically catch the exception
             # raised when the timer is about to expire.
@@ -346,6 +364,11 @@ class AlphaBetaPlayer(IsolationPlayer):
             (-1, -1) if there are no available legal moves.
         """
         self.time_left = time_left
+        #Start in center
+        if len(game.get_legal_moves()) > 8:
+            if (3,3) in game.get_legal_moves(): return (3,3)
+            if (3,2) in game.get_legal_moves(): return (3,2)
+
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
         best_move = set_best_move(game)
@@ -463,14 +486,29 @@ if __name__ == "__main__":
 
 #    game.apply_move((3,3))
 #    game.apply_move((3,4))
-    game.apply_move(player1.get_move(game,lambda: 1))
+    game.apply_move(player1.get_move(game,lambda: 10))
 #    game.apply_move((4,6))
     print(game.to_string())
 #    game.apply_move(player1.get_move(game,lambda: 1000))
-    game.apply_move(player2.get_move(game,lambda: 1))
+    game.apply_move(player2.get_move(game,lambda: 10))
     print(game.to_string())
-    game.apply_move(player1.get_move(game,lambda: 1))
+    print("Center1: ", center_score(game,player1)," Center2: ", center_score(game,player2))
+    game.apply_move(player1.get_move(game,lambda: 10))
     print(game.to_string())
-    game.apply_move(player2.get_move(game,lambda: 1))
+    game.apply_move(player2.get_move(game,lambda: 10))
     print(game.to_string())
-    print(game.history())
+    print("Center1: ", center_score(game,player1)," Center2: ", center_score(game,player2))
+    game.apply_move(player1.get_move(game,lambda: 10))
+    print(game.to_string())
+    game.apply_move(player2.get_move(game,lambda: 10))
+    print(game.to_string())
+    print("Center1: ", center_score(game,player1)," Center2: ", center_score(game,player2))
+
+"""
+    game.apply_move(player2.get_move(game,lambda: 10))
+    print(game.to_string())
+    game.apply_move(player1.get_move(game,lambda: 10))
+    print(game.to_string())
+    game.apply_move(player2.get_move(game,lambda: 10))
+    print(game.to_string())
+"""
