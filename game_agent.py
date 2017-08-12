@@ -43,7 +43,9 @@ def custom_score(game, player):
 
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves - opp_moves)
+    own_center_score = custom_score_3(game, player)
+    opp_center_score = custom_score_3(game,game.get_opponent(player))
+    return float(own_moves - 2 * opp_moves + own_center_score - 2 * opp_center_score)
 
 
 def custom_score_2(game, player):
@@ -136,7 +138,7 @@ class IsolationPlayer:
         positive value large enough to allow the function to return before the
         timer expires.
     """
-    def __init__(self, search_depth=3, score_fn=custom_score, timeout=10.):
+    def __init__(self, search_depth=3, score_fn=custom_score, timeout=15.):
         self.search_depth = search_depth
         self.score = score_fn
         self.time_left = None
