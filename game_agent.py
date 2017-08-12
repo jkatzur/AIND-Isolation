@@ -43,9 +43,8 @@ def custom_score(game, player):
 
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    own_center_score = custom_score_3(game, player)
-    opp_center_score = custom_score_3(game,game.get_opponent(player))
-    return float(own_moves - 2 * opp_moves + own_center_score - 2 * opp_center_score)
+    own_center_score = center_score(game, player)
+    return float(own_moves - 2 * opp_moves + .5 * own_center_score)
 
 
 def custom_score_2(game, player):
@@ -109,12 +108,44 @@ def custom_score_3(game, player):
     if game.is_winner(player):
         return float("inf")
 
+    return(center_score(game,player) + len(game.get_legal_moves(player)))
+
+def center_score(game, player):
+    """Calculates a score for how close to the center a player's move is.
+    This was copied from the sample_players.py example.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    Returns
+    ----------
+    float
+        A score respresenting the distance to center
+    """
     w, h = game.width / 2., game.height / 2.
     y, x = game.get_player_location(player)
     return float((h - y)**2 + (w - x)**2)
 
 def terminal_test(game):
+    # Returns True if the game is over, False otherwise
     return len(game.get_legal_moves()) == 0
+
+def set_best_move(game):
+    #Returns a legal move if there are any, (-1,-1) if not
+    #I built this to avoid copying and pasting this everywhere I needed to set
+    if terminal_test(game):
+        return (-1,-1)
+    else:
+        return game.get_legal_moves()[0]
+
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
@@ -183,10 +214,7 @@ class MinimaxPlayer(IsolationPlayer):
 
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
-        if terminal_test(game):
-            return (-1,-1)
-        else:
-            best_move = game.get_legal_moves()[0]
+        best_move = set_best_move(game)
 
         try:
             # The try/except block will automatically catch the exception
@@ -242,31 +270,39 @@ class MinimaxPlayer(IsolationPlayer):
                 raise SearchTimeout()
 
         """
+        #Check if out of time
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        moves = game.get_legal_moves()
-        a = moves[0]
+        #Set a to a valid move to start in case function cannot find one in time
+        a = set_best_move(game)
         v = float("-inf")
         #print(game.get_legal_moves())
-        for m in moves:
+        for m in game.get_legal_moves():
             contender = self.mm_value(game.forecast_move(m),depth-1, False)
             if contender > v:
                 v = contender
                 a = m
-        #print("Next move is: ", next_move)
         return a
 
     def mm_value(self, game,depth, is_max):
+        """Helper function for minimax recursion. This is a combination of the
+        pseudocode example for MAX and MIN in the textbook. I combined these
+        functions to let me make a change in one place to fix both.
+
+        """
+        #Check if out of time
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         if (depth == 0) | terminal_test(game):
             return self.score(game, self)
+        #This sets up v properly depending on if this is a max or min calc
         if is_max:
             v = float("-inf")
         else:
             v = float("inf")
         for m in game.get_legal_moves():
+            #Determines if we should recur into a MIN or MAX mode next
             if is_max:
                 v = max(v, self.mm_value(game.forecast_move(m),depth-1,False))
             else:
@@ -309,27 +345,21 @@ class AlphaBetaPlayer(IsolationPlayer):
             Board coordinates corresponding to a legal move; may return
             (-1, -1) if there are no available legal moves.
         """
-        # I NEED TO ADD ITERATIVE DEEPENING HERE!
         self.time_left = time_left
-
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
-        if terminal_test(game):
-            return (-1,-1)
-        else:
-            best_move = game.get_legal_moves()[0]
+        best_move = set_best_move(game)
         depth = 1
-        #print("I am here")
         while True:
-            #print("Now I'm in the while")
             try:
                 # The try/except block will automatically catch the exception
                 # raised when the timer is about to expire.
                 best_move = self.alphabeta(game, depth)
                 depth += 1
-                #print("At Depth ", depth, "Best Move is: ", best_move)
 
             except SearchTimeout:
+                #In case there is a SearchTimeout in a function called via try
+                #this returns the best move heretofore
                 return best_move
 
         # Return the best move from the last completed search iteration
@@ -383,28 +413,36 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         v = float("-inf")
-        moves = game.get_legal_moves()
-        a = moves[0]
-        #print(game.get_legal_moves())
-        for m in moves:
+        a = set_best_move(game)
+        for m in game.get_legal_moves():
             contender = self.ab_value(game.forecast_move(m),alpha,beta, depth-1, False)
             alpha = max(alpha,contender)
             if contender > v:
                 v = contender
                 a = m
-        #print("Next move is: ", next_move)
         return a
 
     def ab_value(self, game,alpha, beta, depth, is_max):
+        """Helper recursion function for Alpha Beta pruning. Determined this
+        largely from the pseudocode. I found that once I had figured out minimax
+        this was a lot simpler to apply.
+
+        I combined MAX and MIN similar to minimax above so that I could make
+        changes in a single location for both.
+
+        """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         if (depth == 0) | terminal_test(game):
             return self.score(game, self)
+        #This sets up v properly depending on if this is a max or min calc
         if is_max:
             v = float("-inf")
         else:
             v = float("inf")
         for m in game.get_legal_moves():
+            #Determines if we should recur into a MIN or MAX mode next, and
+            #sets the alpha or beta values as necessary for it
             if is_max:
                 v = max(v, self.ab_value(game.forecast_move(m),alpha,beta,depth-1,False))
                 if v >= beta: return v
@@ -423,10 +461,6 @@ if __name__ == "__main__":
     player2 = AlphaBetaPlayer()
     game = Board(player1, player2)
 
-    # place player 1 on the board at row 2, column 3, then place player 2 on
-    # the board at row 0, column 5; display the resulting board state.  Note
-    # that the .apply_move() method changes the calling object in-place.
-
 #    game.apply_move((3,3))
 #    game.apply_move((3,4))
     game.apply_move(player1.get_move(game,lambda: 1))
@@ -439,30 +473,4 @@ if __name__ == "__main__":
     print(game.to_string())
     game.apply_move(player2.get_move(game,lambda: 1))
     print(game.to_string())
-
-#    game.apply_move(player1.get_move(game,2))
-#    game.apply_move(player2.get_move(game,2))
-#    print(game.to_string())
-
-#    print(min_value(game))
-
-    """
-    game.apply_move(player1.get_move(game,10))
-    game.apply_move(player2.get_move(game,10))
-    print(game.to_string())
-
-    game.apply_move(player1.get_move(game,10))
-    game.apply_move(player2.get_move(game,10))
-    print(game.to_string())
-    print(terminal_test)
-
-    game.apply_move(player1.get_move(game,10))
-    game.apply_move(player2.get_move(game,10))
-    print(game.to_string())
-
-    game.apply_move(player1.get_move(game,10))
-    game.apply_move(player2.get_move(game,10))
-    print(game.to_string())
-
-    assert(player1 == game.active_player)
-    """
+    print(game.history())
