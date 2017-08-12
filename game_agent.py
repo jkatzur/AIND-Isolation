@@ -181,7 +181,10 @@ class MinimaxPlayer(IsolationPlayer):
 
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
-        best_move = (-1, -1)
+        if terminal_test(game):
+            return (-1,-1)
+        else:
+            best_move = game.get_legal_moves()[0]
 
         try:
             # The try/except block will automatically catch the exception
@@ -240,10 +243,11 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        a = (-1,-1)
+        moves = game.get_legal_moves()
+        a = moves[0]
         v = float("-inf")
         #print(game.get_legal_moves())
-        for m in game.get_legal_moves():
+        for m in moves:
             contender = self.mm_value(game.forecast_move(m),depth-1, False)
             if contender > v:
                 v = contender
@@ -308,7 +312,10 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
-        best_move = (-1, -1)
+        if terminal_test(game):
+            return (-1,-1)
+        else:
+            best_move = game.get_legal_moves()[0]
         depth = 1
         #print("I am here")
         while True:
@@ -374,9 +381,10 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         v = float("-inf")
-        a = (-1,-1)
+        moves = game.get_legal_moves()
+        a = moves[0]
         #print(game.get_legal_moves())
-        for m in game.get_legal_moves():
+        for m in moves:
             contender = self.ab_value(game.forecast_move(m),alpha,beta, depth-1, False)
             alpha = max(alpha,contender)
             if contender > v:
@@ -419,15 +427,15 @@ if __name__ == "__main__":
 
 #    game.apply_move((3,3))
 #    game.apply_move((3,4))
-    game.apply_move(player1.get_move(game,lambda: 10))
+    game.apply_move(player1.get_move(game,lambda: 1))
 #    game.apply_move((4,6))
     print(game.to_string())
 #    game.apply_move(player1.get_move(game,lambda: 1000))
-    game.apply_move(player2.get_move(game,lambda: 10))
+    game.apply_move(player2.get_move(game,lambda: 1))
     print(game.to_string())
-    game.apply_move(player1.get_move(game,lambda: 10))
+    game.apply_move(player1.get_move(game,lambda: 1))
     print(game.to_string())
-    game.apply_move(player2.get_move(game,lambda: 10))
+    game.apply_move(player2.get_move(game,lambda: 1))
     print(game.to_string())
 
 #    game.apply_move(player1.get_move(game,2))
