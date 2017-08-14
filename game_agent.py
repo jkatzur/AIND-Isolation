@@ -46,6 +46,7 @@ def custom_score(game, player):
     if own_moves > 5:
         return float(own_moves - (8.0 / 18.5) * center_score(game,player))
     #With moderate options, find areas to increase relative moves vs opponent
+    #This was copied from the sample_players.py example
     elif own_moves > 2:
         opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
         return float(own_moves - opp_moves)
@@ -85,7 +86,7 @@ def custom_score_2(game, player):
 
     own_moves = len(game.get_legal_moves(player))
     #Goal is to not penalize, in any way, moves that will lead to large number
-    #of potentia movements
+    #of potential movements. This was copied from sample_players.py example
     if own_moves > 5:
         return float(own_moves)
     #With moderate options, penalize moves that push from center (normalized)
@@ -187,6 +188,7 @@ class IsolationPlayer:
         positive value large enough to allow the function to return before the
         timer expires.
     """
+    #I changed this to timeout=15 based on an idea in the Udacity forum
     def __init__(self, search_depth=3, score_fn=custom_score, timeout=15.):
         self.search_depth = search_depth
         self.score = score_fn
@@ -235,7 +237,8 @@ class MinimaxPlayer(IsolationPlayer):
             if (3,2) in game.get_legal_moves(): return (3,2)
 
         # Initialize the best move so that this function returns something
-        # in case the search fails due to timeout
+        # in case the search fails due to timeout. I made this change based on
+        # feedback from the Udacity forum
         best_move = set_best_move(game)
         try:
             # The try/except block will automatically catch the exception
@@ -310,7 +313,6 @@ class MinimaxPlayer(IsolationPlayer):
         """Helper function for minimax recursion. This is a combination of the
         pseudocode example for MAX and MIN in the textbook. I combined these
         functions to let me make a change in one place to fix both.
-
         """
         #Check if out of time
         if self.time_left() < self.TIMER_THRESHOLD:
@@ -373,7 +375,8 @@ class AlphaBetaPlayer(IsolationPlayer):
             if (3,2) in game.get_legal_moves(): return (3,2)
 
         # Initialize the best move so that this function returns something
-        # in case the search fails due to timeout
+        # in case the search fails due to timeout. I made this change based on
+        # feedback from the Udacity forum
         best_move = set_best_move(game)
         depth = 1
         while True:
