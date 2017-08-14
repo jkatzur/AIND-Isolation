@@ -34,7 +34,6 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: Revise this function - right now it is the improved_score function now
     if game.is_loser(player):
         return float("-inf")
 
@@ -42,12 +41,14 @@ def custom_score(game, player):
         return float("inf")
 
     own_moves = len(game.get_legal_moves(player))
-    #With tons of options, take a good position
+    #With tons of options, take a good position. I normalize the center_score
+    #to 8. The max distance is 18.5, and there are a max of 8 moves in general
     if own_moves > 5:
-        return float(own_moves - center_score(game,player))
-    #With moderate options, stake out moves and position
+        return float(own_moves - (8.0 / 18.5) * center_score(game,player))
+    #With moderate options, find areas to increase relative moves vs opponent
     elif own_moves > 2:
-        return float(own_moves - .5 * center_score(game,player))
+        opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+        return float(own_moves - opp_moves)
     #with limited options, go for the kill
     else:
         opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
@@ -76,7 +77,6 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: Revise this funciton. Right now it is the open_move_score now
     if game.is_loser(player):
         return float("-inf")
 
@@ -84,11 +84,13 @@ def custom_score_2(game, player):
         return float("inf")
 
     own_moves = len(game.get_legal_moves(player))
+    #Goal is to not penalize, in any way, moves that will lead to large number
+    #of potentia movements
     if own_moves > 5:
-        return float(own_moves - .5 * center_score(game,player))
-    #With moderate options, stake out moves and position
+        return float(own_moves)
+    #With moderate options, penalize moves that push from center (normalized)
     elif own_moves > 2:
-        return float(own_moves - .25 * center_score(game,player))
+        return float(own_moves - (8.0 / 18.5) * center_score(game,player))
     #with limited options, go for the kill
     else:
         opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
@@ -116,7 +118,8 @@ def custom_score_3(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # This is the basic how many moves function. Good to compare against
+    #This is the basic how many moves function. Good to compare other heuristics
+    #against given it's very fast performance.
     if game.is_loser(player):
         return float("-inf")
 
