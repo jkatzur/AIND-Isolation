@@ -102,3 +102,4 @@ isolation-*
 #Docs and PDFs
 *.docx
 *.pdf
+*.xlsx
