@@ -41,16 +41,16 @@ def custom_score(game, player):
         return float("inf")
 
     own_moves = len(game.get_legal_moves(player))
-    #With tons of options, take a good position. I normalize the center_score
+    # With tons of options, take a good position. I normalize the center_score
     #to 8. The max distance is 18.5, and there are a max of 8 moves in general
     if own_moves > 5:
         return float(own_moves - (8.0 / 18.5) * center_score(game,player))
-    #With moderate options, find areas to increase relative moves vs opponent
-    #This was copied from the sample_players.py example
+    # With moderate options, find areas to increase relative moves vs opponent
+    # This was copied from the sample_players.py example
     elif own_moves > 2:
         opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
         return float(own_moves - opp_moves)
-    #with limited options, go for the kill
+    # With limited options, go for the kill
     else:
         opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
         return float(own_moves - 2 * opp_moves)
@@ -85,14 +85,14 @@ def custom_score_2(game, player):
         return float("inf")
 
     own_moves = len(game.get_legal_moves(player))
-    #Goal is to not penalize, in any way, moves that will lead to large number
-    #of potential movements. This was copied from sample_players.py example
+    # Goal is to not penalize, in any way, moves that will lead to large number
+    # of potential movements. This was copied from sample_players.py example
     if own_moves > 5:
         return float(own_moves)
-    #With moderate options, penalize moves that push from center (normalized)
+    # With moderate options, penalize moves that push from center (normalized)
     elif own_moves > 2:
         return float(own_moves - (8.0 / 18.5) * center_score(game,player))
-    #with limited options, go for the kill
+    # With limited options, go for the kill
     else:
         opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
         return float(own_moves - 2 * opp_moves)
@@ -119,8 +119,8 @@ def custom_score_3(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    #This is the basic how many moves function. Good to compare other heuristics
-    #against given it's very fast performance.
+    # This is the basic how many moves function. Good to compare other heuristics
+    # against given it's very fast performance.
     if game.is_loser(player):
         return float("-inf")
 
@@ -158,8 +158,8 @@ def terminal_test(game):
     return len(game.get_legal_moves()) == 0
 
 def set_best_move(game):
-    #Returns a legal move if there are any, (-1,-1) if not
-    #I built this to avoid copying and pasting this everywhere I needed to set
+    # Returns a legal move if there are any, (-1,-1) if not
+    # I built this to avoid copying and pasting this everywhere I needed to set
     if terminal_test(game):
         return (-1,-1)
     else:
@@ -188,7 +188,7 @@ class IsolationPlayer:
         positive value large enough to allow the function to return before the
         timer expires.
     """
-    #I changed this to timeout=15 based on an idea in the Udacity forum
+    # I changed this to timeout=15 based on an idea in the Udacity forum
     def __init__(self, search_depth=3, score_fn=custom_score, timeout=15.):
         self.search_depth = search_depth
         self.score = score_fn
@@ -231,7 +231,7 @@ class MinimaxPlayer(IsolationPlayer):
             (-1, -1) if there are no available legal moves.
         """
         self.time_left = time_left
-        #Start in center
+        #  Start in center
         if len(game.get_legal_moves()) > 8:
             if (3,3) in game.get_legal_moves(): return (3,3)
             if (3,2) in game.get_legal_moves(): return (3,2)
@@ -369,7 +369,7 @@ class AlphaBetaPlayer(IsolationPlayer):
             (-1, -1) if there are no available legal moves.
         """
         self.time_left = time_left
-        #Start in center
+        # Start in center
         if len(game.get_legal_moves()) > 8:
             if (3,3) in game.get_legal_moves(): return (3,3)
             if (3,2) in game.get_legal_moves(): return (3,2)
@@ -464,14 +464,14 @@ class AlphaBetaPlayer(IsolationPlayer):
             raise SearchTimeout()
         if (depth == 0) | terminal_test(game):
             return self.score(game, self)
-        #This sets up v properly depending on if this is a max or min calc
+        # This sets up v properly depending on if this is a max or min calc
         if is_max:
             v = float("-inf")
         else:
             v = float("inf")
         for m in game.get_legal_moves():
-            #Determines if we should recur into a MIN or MAX mode next, and
-            #sets the alpha or beta values as necessary for it
+            # Determines if we should recur into a MIN or MAX mode next, and
+            # sets the alpha or beta values as necessary for it
             if is_max:
                 v = max(v, self.ab_value(game.forecast_move(m),alpha,beta,depth-1,False))
                 if v >= beta: return v
@@ -485,7 +485,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 if __name__ == "__main__":
     from isolation import Board
 
-    # create an isolation board (by default 7x7)
+    # Create an isolation board (by default 7x7)
     player1 = MinimaxPlayer()
     player2 = AlphaBetaPlayer()
     game = Board(player1, player2)
